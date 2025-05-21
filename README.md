@@ -1,3 +1,5 @@
+<h1> <b>WARNING</b>⚠️: Train script adapted to be tested on Colab. Stripped out Mujoco, gym and D4RL with dummy code for training version. Use original code for prod use. </h1>
+
 <h1 align="center">Offline Transition Modeling via Contrastive Energy Learning</h1>
 
 The official implementation of [*Offline Transition Modeling via Contrastive Energy Learning*](https://openreview.net/forum?id=dqpg8jdA2w).
