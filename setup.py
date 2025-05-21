@@ -17,7 +17,6 @@ setup(
         "tqdm",
         "argparse",
         "h5py",
-        "pickle",
         "tensorflow",
     ],
     package_data={

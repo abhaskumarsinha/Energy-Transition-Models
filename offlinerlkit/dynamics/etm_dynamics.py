@@ -246,7 +246,9 @@ class EnergyDynamics():
         states_actions, raw_delta_states = self.format_samples_for_energy_training(data, with_reward=self.energy_model.with_reward)
         data_size = states_actions.shape[0]
 
-        eval_size = max(int(np.ceil(eval_ratio * data_size)), max_size)
+        #eval_size = max(int(np.ceil(eval_ratio * data_size)), max_size)
+        eval_size = min(max(int(np.ceil(eval_ratio * data_size)), 1), data_size - 1)
+
         if eval_holdout:
             train_size = data_size - eval_size
             train_splits, eval_splits = torch.utils.data.random_split(range(data_size), (train_size, eval_size))
@@ -444,7 +446,8 @@ class EnergyDynamics():
         mcmc_start_time = time.time()
         delta_state = langevin_mcmc_sa_s(self.energy_model, state_action, init_samples, langevin_steps, noise_scale=langevin_noise, grad_clip=0.5, delta_clip=0.5, margin_clip=1.1)
         device = delta_state.device
-        delta_state = delta_state.detach().cpu().numpy()
+        #delta_state = delta_state.detach().cpu().numpy()
+        delta_state = delta_state.detach().cpu()
         mcmc_time = time.time() - mcmc_start_time
 
         info = {
@@ -475,7 +478,9 @@ class EnergyDynamics():
             pred_delta_states, pred_info = self.predict(states_actions_batch, init_samples=torch.zeros_like(delta_states_batch, device=self.energy_model.device), rescale=True)
             
             if error_type == "mse":
-                error_sum += np.sum((pred_delta_states - delta_states_batch.cpu().numpy()) ** 2).item()
+                diff = pred_delta_states - delta_states_batch.cpu()
+                error_sum += (diff ** 2).sum().item()
+
             elif error_type == "mae":
                 error_sum += np.sum(np.abs(pred_delta_states - delta_states_batch.cpu().numpy())).item()
             mcmc_time += pred_info["mcmc_time"]

@@ -40,14 +40,30 @@ class StandardScaler(object):
         return (data - self.mu) / self.std
 
     def inverse_transform(self, data):
-        """Undoes the transformation performed by this scaler.
+        if isinstance(data, torch.Tensor):
+            device = data.device
+            dtype = data.dtype
+            
+            # Handle mu
+            if isinstance(self.mu, np.ndarray):
+                mu = torch.tensor(self.mu, dtype=dtype, device=device)
+            elif isinstance(self.mu, torch.Tensor):
+                mu = self.mu.to(device)
+            else:  # assume float or scalar
+                mu = torch.tensor(self.mu, dtype=dtype, device=device)
+            
+            # Handle std
+            if isinstance(self.std, np.ndarray):
+                std = torch.tensor(self.std, dtype=dtype, device=device)
+            elif isinstance(self.std, torch.Tensor):
+                std = self.std.to(device)
+            else:
+                std = torch.tensor(self.std, dtype=dtype, device=device)
 
-        Arguments:
-        data (np.array): A numpy array containing the points to be transformed.
+            return std * data + mu
+        else:
+            return self.std * data + self.mu
 
-        Returns: (np.array) The transformed dataset.
-        """
-        return self.std * data + self.mu
     
     def save_scaler(self, save_path, prefix: str=None):
         if prefix: 
